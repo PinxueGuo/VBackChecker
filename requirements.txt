@@ -1,0 +1,16 @@
+# conda create -n gsva python=3.10
+# pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu124
+bitsandbytes==0.43.3
+deepspeed==0.15.0
+einops==0.4.1
+opencv-python-headless==4.10.0.84
+peft==0.4.0
+PyYAML==6.0.2
+sentencepiece==0.2.0
+termcolor==2.4.0
+timm==0.6.13
+tokenizers==0.19.1
+transformers==4.44.2
+pycocotools
+imageio
+protobuf
