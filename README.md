@@ -42,8 +42,6 @@ conda activate vbackchecker
 pip install -r requirements.txt
 ```
 
-Deepspeed 0.15+ and PyTorch 2.4 (CUDA 12.4 build) are required for the provided scripts.
-
 ## Data Preparation
 
 ### 1. Base datasets (from GSVA/LISA)
