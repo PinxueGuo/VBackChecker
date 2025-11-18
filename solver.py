@@ -253,7 +253,7 @@ def eval_gres(val_loader, model_engine, epoch, args, logger, tokenizer):
     nt_tn_meter = AverageMeter("NT_TN", ":6.3f", Summary.SUM)
     nt_fp_meter = AverageMeter("NT_FP", ":6.3f", Summary.SUM)
     nt_fn_meter = AverageMeter("NT_FN", ":6.3f", Summary.SUM)
-    is_grefcoco = (val_loader.dataset.ds == 'grefcoco' or val_loader.dataset.ds == 'grefcoco_syn')
+    is_grefcoco = (val_loader.dataset.ds in ['grefcoco', 'R_Instruct_A', 'R_Instruct_B'])
     for sample_idx, input_dict in enumerate(tqdm.tqdm(val_loader)):
         torch.cuda.empty_cache()
 
@@ -370,7 +370,7 @@ def eval_faith(val_loader, model_engine, epoch, args, logger, tokenizer):
     nt_tn_meter = AverageMeter("NT_TN", ":6.3f", Summary.SUM)
     nt_fp_meter = AverageMeter("NT_FP", ":6.3f", Summary.SUM)
     nt_fn_meter = AverageMeter("NT_FN", ":6.3f", Summary.SUM)
-    is_grefcoco = (val_loader.dataset.ds == 'grefcoco' or val_loader.dataset.ds == 'grefcoco_syn' or val_loader.dataset.ds == 'grefcoco_hal')
+    is_grefcoco = (val_loader.dataset.ds in ['grefcoco', 'R_Instruct_A', 'R_Instruct_B', 'R2_HalBench'])
     for sample_idx, input_dict in enumerate(tqdm.tqdm(val_loader)):
         torch.cuda.empty_cache()
 
@@ -487,7 +487,7 @@ def eval_hal(val_loader, model_engine, epoch, args, logger, tokenizer):
     nt_tn_meter = AverageMeter("NT_TN", ":6.3f", Summary.SUM)
     nt_fp_meter = AverageMeter("NT_FP", ":6.3f", Summary.SUM)
     nt_fn_meter = AverageMeter("NT_FN", ":6.3f", Summary.SUM)
-    is_grefcoco = (val_loader.dataset.ds == 'grefcoco' or val_loader.dataset.ds == 'grefcoco_syn' or val_loader.dataset.ds == 'grefcoco_hal')
+    is_grefcoco = (val_loader.dataset.ds == 'grefcoco' or val_loader.dataset.ds == 'R_Instruct_A' or val_loader.dataset.ds == 'R2_HalBench')
     gt_seg_list = []
     pred_seg_list = []
     obj_cap_list = []

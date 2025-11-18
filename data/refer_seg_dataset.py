@@ -27,10 +27,10 @@ from model.segment_anything import ResizeLongestSide
 from .refzom import REFZOM_REFER
 from .grefer import G_REFER
 from .refer import REFER
-from .grefer_syn import G_REFER_SYN
-from .grefer_hal import G_REFER_HAL
-from .grefer_hal_pope import G_REFER_HAL_POPE
-from .grefer_syn2 import G_REFER_SYN2
+from .r_instruct_a import RInstructARefer
+from .r_instruct_b import RInstructBRefer
+from .r2_halbench import R2HalBenchRefer
+from .pope import PopeRefer
 
 
 class ReferSegDataset(TorchDataset):
@@ -80,14 +80,14 @@ class ReferSegDataset(TorchDataset):
 
             if ds == "grefcoco":
                 refer_api = G_REFER(DATA_DIR, ds, splitBy)
-            elif ds == "grefcoco_syn":
-                refer_api = G_REFER_SYN(DATA_DIR, ds, splitBy)
-            elif ds == "grefcoco_syn2":
-                refer_api = G_REFER_SYN2(DATA_DIR, ds, splitBy)
-            elif ds == "grefcoco_hal":
-                refer_api = G_REFER_HAL(DATA_DIR, ds, splitBy)
-            elif ds == "grefcoco_hal_pope":
-                refer_api = G_REFER_HAL_POPE(DATA_DIR, ds, splitBy)
+            elif ds == "R_Instruct_A":
+                refer_api = RInstructARefer(DATA_DIR, ds, splitBy)
+            elif ds == "R_Instruct_B":
+                refer_api = RInstructBRefer(DATA_DIR, ds, splitBy)
+            elif ds == "R2_HalBench":
+                refer_api = R2HalBenchRefer(DATA_DIR, ds, splitBy)
+            elif ds == "pope":
+                refer_api = PopeRefer(DATA_DIR, ds, splitBy)
             elif ds == 'refzom':
                 refer_api = REFZOM_REFER(DATA_DIR, ds)
             else:
@@ -106,21 +106,9 @@ class ReferSegDataset(TorchDataset):
                     item["file_name"] = os.path.join(
                         DATA_DIR, "images/saiapr_tc-12", item["file_name"]
                     )
-                elif ds == "grefcoco_syn":
+                elif ds in ["R_Instruct_A", "R_Instruct_B", "R2_HalBench", "pope"]:
                     item["file_name"] = os.path.join(
-                        "/home/ubuntu/researches/SA1B/SAM", item["file_name"]
-                    )
-                elif ds == "grefcoco_syn2":
-                    item["file_name"] = os.path.join(
-                        "/home/ubuntu/researches/SA1B/SAM", item["file_name"]
-                    )
-                elif ds == "grefcoco_hal":
-                    item["file_name"] = os.path.join(
-                        "/home/ubuntu/researches/SA1B/SAM", item["file_name"]
-                    )
-                elif ds == "grefcoco_hal_pope":
-                    item["file_name"] = os.path.join(
-                        "/home/ubuntu/researches/lisa_datasets/refer_seg/grefcoco_hal_pope/images", item["file_name"]
+                        DATA_DIR, ds, "images", item["file_name"]
                     )
                 else:
                     item["file_name"] = os.path.join(
@@ -190,7 +178,7 @@ class ReferSegDataset(TorchDataset):
         sents = []
         ann_ids = []
 
-        if ds in ["grefcoco_syn", "grefcoco", "grefcoco_syn2"]:
+        if ds in ["R_Instruct_A", "grefcoco", "R_Instruct_B"]:
             response_error = []
             response_error_type = []
 
@@ -200,7 +188,7 @@ class ReferSegDataset(TorchDataset):
                 sents.append(text)
                 ann_ids.append(ref["ann_id"])
 
-                if ds in ["grefcoco_syn", "grefcoco", "grefcoco_syn2"]:
+                if ds in ["R_Instruct_A", "grefcoco", "R_Instruct_B"]:
                     if ref["no_target"]:
                         response_error.append(sent["response_error"]["error_reason"])
                         response_error_type.append(sent["response_error"]["error_type"])
@@ -218,7 +206,7 @@ class ReferSegDataset(TorchDataset):
         # sampled_ann_ids = np.vectorize(ann_ids.__getitem__)(sampled_inds).tolist()
         sampled_ann_ids = [ann_ids[ind] for ind in sampled_inds]
 
-        if ds in ["grefcoco_syn", "grefcoco", "grefcoco_syn2"]:
+        if ds in ["R_Instruct_A", "grefcoco", "R_Instruct_B"]:
             sampled_response_error = [response_error[ind] for ind in sampled_inds]
             sampled_response_error_type = [response_error_type[ind] for ind in sampled_inds]
             
@@ -250,7 +238,7 @@ class ReferSegDataset(TorchDataset):
                                 # convert to compressed RLE
                                 rle = mask.frPyObjects(rle, image_info["height"], image_info["width"])
                             else:
-                                if ds=="grefcoco_syn" or ds=="grefcoco_hal" or ds=="grefcoco_syn2" or ds=="grefcoco_hal_pope":
+                                if ds=="R_Instruct_A" or ds=="R2_HalBench" or ds=="R_Instruct_B" or ds=="pope":
                                     rle = ann["segmentation"]
                                     for i in range(len(rle)):
                                         if not isinstance(rle[i]["counts"], bytes):
@@ -308,7 +296,7 @@ class ReferSegDataset(TorchDataset):
         image = self.transform.apply_image(image)  # preprocess image for sam
         resize = image.shape[:2]
 
-        if ds == "grefcoco_syn":
+        if ds == "R_Instruct_A":
             questions = []
             answers = []
             answer_template = random.choice(FAITH_ANSWER_LIST)
@@ -346,7 +334,7 @@ class ReferSegDataset(TorchDataset):
                 conversations.append(conv.get_prompt())
                 i += 1
 
-        elif ds == "grefcoco_syn2":
+        elif ds == "R_Instruct_B":
             questions = []
             answers = []
             answer_template = random.choice(FAITH_ANSWER_LIST)
@@ -384,7 +372,7 @@ class ReferSegDataset(TorchDataset):
                 conversations.append(conv.get_prompt())
                 i += 1
 
-        elif ds == "grefcoco_hal" or ds == "grefcoco_hal_pope":
+        elif ds == "R2_HalBench" or ds == "pope":
             questions = []
             answers = []
             answer_template = random.choice(FAITH_ANSWER_LIST)
@@ -504,7 +492,7 @@ class ReferSegDataset(TorchDataset):
         masks = masks.bool().byte()
         label = torch.ones(masks.shape[1], masks.shape[2]) * self.ignore_label
         do_seg = True
-        if ds == 'grefcoco_syn2':
+        if ds == 'R_Instruct_B':
             do_seg = False
 
         return (

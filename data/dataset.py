@@ -34,9 +34,10 @@ from .vqa_dataset import VQADataset
 from .refer import REFER
 from .grefer import G_REFER
 from .refzom import REFZOM_REFER
-from .grefer_syn import G_REFER_SYN
-from .grefer_hal import G_REFER_HAL
-from .grefer_hal_pope import G_REFER_HAL_POPE
+from .r_instruct_a import RInstructARefer
+from .r_instruct_b import RInstructBRefer
+from .r2_halbench import R2HalBenchRefer
+from .pope import PopeRefer
 
 def collate_fn(
     batch, tokenizer=None, conv_type="llava_v1", use_mm_start_end=True, local_rank=-1
@@ -319,12 +320,14 @@ class ValDataset(TorchDataset):
             
             if ds == "grefcoco":
                 refer_api = G_REFER(os.path.join(self.base_image_dir, 'refer_seg'), ds, splitBy)
-            elif ds == 'grefcoco_syn':
-                refer_api = G_REFER_SYN(os.path.join(self.base_image_dir, 'refer_seg'), ds, splitBy)
-            elif ds == 'grefcoco_hal':
-                refer_api = G_REFER_HAL(os.path.join(self.base_image_dir, 'refer_seg'), ds, splitBy)
-            elif ds == 'grefcoco_hal_pope':
-                refer_api = G_REFER_HAL_POPE(os.path.join(self.base_image_dir, 'refer_seg'), ds, splitBy)
+            elif ds == 'R_Instruct_A':
+                refer_api = RInstructARefer(os.path.join(self.base_image_dir, 'refer_seg'), ds, splitBy)
+            elif ds == 'R_Instruct_B':
+                refer_api = RInstructBRefer(os.path.join(self.base_image_dir, 'refer_seg'), ds, splitBy)
+            elif ds == 'R2_HalBench':
+                refer_api = R2HalBenchRefer(os.path.join(self.base_image_dir, 'refer_seg'), ds, splitBy)
+            elif ds == 'pope':
+                refer_api = PopeRefer(os.path.join(self.base_image_dir, 'refer_seg'), ds, splitBy)
             elif ds == 'refzom':
                 refer_api = REFZOM_REFER(os.path.join(self.base_image_dir, 'refer_seg'), ds)
             else:
@@ -342,17 +345,9 @@ class ValDataset(TorchDataset):
                     item["file_name"] = os.path.join(
                         base_image_dir, 'refer_seg', "images/saiapr_tc-12", item["file_name"]
                     )
-                elif ds == "grefcoco_syn":
+                elif ds in ["R_Instruct_A", "R_Instruct_B", "R2_HalBench", "pope"]:
                     item["file_name"] = os.path.join(
-                        "/home/ubuntu/researches/SA1B/SAM", item["file_name"]
-                    )
-                elif ds == "grefcoco_hal":
-                    item["file_name"] = os.path.join(
-                        "/home/ubuntu/researches/SA1B/SAM", item["file_name"]
-                    )
-                elif ds == "grefcoco_hal_pope":
-                    item["file_name"] = os.path.join(
-                        "/home/ubuntu/researches/lisa_datasets/refer_seg/grefcoco_hal_pope/images", item["file_name"]
+                        base_image_dir, 'refer_seg', ds, "images", item["file_name"]
                     )
                 else:
                     item["file_name"] = os.path.join(
@@ -437,8 +432,8 @@ class ValDataset(TorchDataset):
             masks = []
             for i, ann_id in enumerate(sampled_ann_ids):
                 # grefcoco multiple annid start
-                if self.ds in ['grefcoco', 'refzom', 'grefcoco_syn', 'grefcoco_hal', 'grefcoco_hal_pope']:
-                    no_target = ann_id == [-1] if (self.ds in ['grefcoco', 'grefcoco_syn', 'grefcoco_hal', 'grefcoco_hal_pope']) else ann_id == []
+                if self.ds in ['grefcoco', 'refzom', 'R_Instruct_A', 'R_Instruct_B', 'R2_HalBench', 'pope']:
+                    no_target = ann_id == [-1] if (self.ds in ['grefcoco', 'R_Instruct_A', 'R_Instruct_B', 'R2_HalBench', 'pope']) else ann_id == []
                     if no_target: # no target
                         m = np.zeros((image_info["height"], image_info["width"], 1))
                     elif len(ann_id) > 1: # multi target / already merged ?
@@ -471,7 +466,7 @@ class ValDataset(TorchDataset):
                         if len(mask_info) == 0:
                             m = np.zeros((image_info["height"], image_info["width"], 1))
                         else:
-                            if self.ds == 'grefcoco_syn' or self.ds == 'grefcoco_hal' or self.ds == 'grefcoco_hal_pope':
+                            if self.ds in ['R_Instruct_A', 'R_Instruct_B', 'R2_HalBench', 'pope']:
                                 rle = mask_info
                                 for rle_i in range(len(rle)):
                                     if not isinstance(rle[rle_i]["counts"], bytes):
@@ -519,7 +514,7 @@ class ValDataset(TorchDataset):
             masks = [mask_json]
 
         if self.data_type == 'refer_seg':
-            if self.ds == 'grefcoco_syn' or self.ds == 'grefcoco_hal' or self.ds == 'grefcoco_hal_pope':
+            if self.ds in ['R_Instruct_A', 'R_Instruct_B', 'R2_HalBench', 'pope']:
                 stripped_refers = [s.strip().strip('.') for s in sampled_sents]
                 for idx_ref, strip_ref in enumerate(stripped_refers):
                     conv.messages = []

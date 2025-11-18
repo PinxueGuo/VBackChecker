@@ -397,9 +397,9 @@ class LisaGSVAForCausalLM(LlavaLlamaForCausalLM):
                 raise RuntimeError("Found it!")
 
             if do_segs[batch_idx] == False:
-                # vqa dataset and grefcoco_syn2 dataset, 
+                # vqa dataset and R_Instruct_B dataset,
                 # vqa's pred/gt_masks[batch_idx] len=0, no mask loss already
-                # so let's continue for grefcoco_syn2, to not train segmentation
+                # so let's continue for R_Instruct_B to not train segmentation
                 # mask_bce_loss += torch.zeros_like(ce_loss)
                 # mask_dice_loss += torch.zeros_like(ce_loss)
                 # num_masks += gt_mask.shape[0]

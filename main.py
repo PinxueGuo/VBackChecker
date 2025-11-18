@@ -47,12 +47,12 @@ def parse_args():
         type=str,
     )
     parser.add_argument(
-        "--refer_seg_data", default="refclef||refcoco||refcoco+||refcocog||grefcoco", type=str
+        "--refer_seg_data", default="refclef||refcoco||refcoco+||refcocog||grefcoco||R_Instruct_A||R_Instruct_B", type=str
     )
     parser.add_argument("--vqa_data", default="llava_instruct_150k", type=str)
     parser.add_argument("--reason_seg_data", default="ReasonSeg|train", type=str)
     # parser.add_argument("--val_dataset", default="ReasonSeg|val", type=str)
-    parser.add_argument("--val_dataset", default="grefcoco_hal|unc|val", type=str)
+    parser.add_argument("--val_dataset", default="R2_HalBench|unc|val", type=str)
     
     parser.add_argument("--log_base_dir", default="./outputs", type=str)
     parser.add_argument("--exp_name", default="default", type=str)
@@ -202,7 +202,7 @@ def main():
         #     args.dataset_dir,
         #     tokenizer,
         #     args.vision_tower,
-        #     'grefcoco_hal|unc|val',
+        #     'R2_HalBench|unc|val',
         #     args.image_size
         # )
         grefcoco_val_ds = ValDataset(
@@ -370,9 +370,9 @@ def main():
     if args.eval_only:
         if val_dataset.ds in ['grefcoco', 'refzom']:
             eval_gres(val_loader, model_engine, 0, args, logger, tokenizer)
-        elif val_dataset.ds in ['grefcoco_syn']:
+        elif val_dataset.ds in ['R_Instruct_A', 'R_Instruct_B']:
             eval_faith(val_loader, model_engine, 0, args, logger, tokenizer)
-        elif val_dataset.ds in ['grefcoco_hal', 'grefcoco_hal_pope']:
+        elif val_dataset.ds in ['R2_HalBench', 'pope']:
             hal_Nacc, hal_Tacc, hal_Acc, caption_list, imagename_list, gt_list, pred_list = eval_hal(val_loader, model_engine, 0, args, logger, tokenizer)
             detail = {
                 "hal_Nacc": hal_Nacc,
@@ -412,7 +412,7 @@ def main():
             grefcoco_giou, grefcoco_ciou, n_acc, t_acc = eval_gres(grefcoco_loader, model_engine, epoch, args, logger, tokenizer)
             if rank == 0:
                 with open(os.path.join(args.log_dir, "quick_look_result.log"), "a") as t:
-                    t.write(f"""[{epoch + 1}] HalMetaBench: NAcc:{hal_n_acc:.4f}, TAcc:{hal_t_acc:.4f}. || grefcoco_val: gIoU:{grefcoco_giou:.4f}, cIoU:{grefcoco_ciou:.4f}, NAcc:{n_acc:.4f}, TAcc:{t_acc:.4f}.\n""")
+                    t.write(f"""[{epoch + 1}] R2_HalBench: NAcc:{hal_n_acc:.4f}, TAcc:{hal_t_acc:.4f}. || grefcoco_val: gIoU:{grefcoco_giou:.4f}, cIoU:{grefcoco_ciou:.4f}, NAcc:{n_acc:.4f}, TAcc:{t_acc:.4f}.\n""")
 #                     t.write(f"""[{epoch + 1}] HalMetaBench: NAcc:{hal_n_acc:.4f}, TAcc:{hal_t_acc:.4f}
 # faith_val: gIoU:{faith_giou:.4f}, cIoU:{faith_ciou:.4f}, NAcc:{faith_n_acc:.4f}, TAcc:{faith_t_acc:.4f}.
 # grefcoco_val: gIoU:{grefcoco_giou:.4f}, cIoU:{grefcoco_ciou:.4f}, NAcc:{n_acc:.4f}, TAcc:{t_acc:.4f}.\n""")
